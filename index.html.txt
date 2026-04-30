@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relations and Functions Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .math-font { font-family: 'Times New Roman', serif; font-style: italic; }
+        .tab-btn-active { background-color: #4f46e5; color: white; }
+        .tab-btn-inactive { color: #4b5563; }
+        .tab-btn-inactive:hover { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-bold text-indigo-900 mb-2">Chapter 2: Relations and Functions</h1>
+            <p class="text-gray-600">Comprehensive Class XI Mathematics Simulator</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap justify-center gap-2 mb-8 bg-white p-2 rounded-xl shadow-sm">
+            <button onclick="switchTab('cartesian')" id="tab-cartesian" class="tab-btn px-4 py-2 rounded-lg tab-btn-active transition">1. Cartesian Product</button>
+            <button onclick="switchTab('relations')" id="tab-relations" class="tab-btn px-4 py-2 rounded-lg tab-btn-inactive transition">2. Relations Map</button>
+            <button onclick="switchTab('functions')" id="tab-functions" class="tab-btn px-4 py-2 rounded-lg tab-btn-inactive transition">3. Function Tester</button>
+            <button onclick="switchTab('gallery')" id="tab-gallery" class="tab-btn px-4 py-2 rounded-lg tab-btn-inactive transition">4. Function Gallery</button>
+            <button onclick="switchTab('algebra')" id="tab-algebra" class="tab-btn px-4 py-2 rounded-lg tab-btn-inactive transition">5. Algebra of Functions</button>
+        </div>
+
+        <!-- 1. Cartesian Product Section -->
+        <section id="section-cartesian" class="content-section space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-4 text-indigo-800">Set Inputs</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Set A (comma separated)</label>
+                            <input type="text" id="setA" value="1, 2, 3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" oninput="updateCartesian()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Set B (comma separated)</label>
+                            <input type="text" id="setB" value="a, b" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" oninput="updateCartesian()">
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold mb-4 text-indigo-800">Resulting Cartesian Product</h3>
+                    <div id="cartesianResult" class="text-lg font-mono text-gray-700 bg-gray-50 p-4 rounded-xl min-h-[100px] flex flex-wrap gap-2"></div>
+                    <p id="productCount" class="mt-4 text-sm text-gray-500 font-medium"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Relations Section -->
+        <section id="section-relations" class="content-section hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-indigo-800">Arrow Diagram</h3>
+                    <button onclick="resetRelations()" class="text-sm px-4 py-1 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition">Clear</button>
+                </div>
+                <div class="flex flex-col md:flex-row items-center justify-around gap-8 min-h-[400px] p-4">
+                    <div id="rel-setA" class="flex flex-col gap-4"></div>
+                    <div class="relative flex-grow h-[400px] max-w-[300px]">
+                        <canvas id="relCanvas" width="300" height="400" class="absolute inset-0"></canvas>
+                    </div>
+                    <div id="rel-setB" class="flex flex-col gap-4"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="p-4 bg-blue-50 rounded-xl text-center"><span class="font-bold block">Domain</span><p id="domain-text">{}</p></div>
+                    <div class="p-4 bg-green-50 rounded-xl text-center"><span class="font-bold block">Range</span><p id="range-text">{}</p></div>
+                    <div class="p-4 bg-purple-50 rounded-xl text-center"><span class="font-bold block">Codomain</span><p id="codomain-text">{}</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Functions Section -->
+        <section id="section-functions" class="content-section hidden space-y-6 text-center">
+            <div class="bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                <h3 class="text-2xl font-bold text-indigo-800 mb-2">Function Criterion</h3>
+                <p class="text-gray-600 mb-8">Every element of domain must have <b>one and only one</b> image.</p>
+                <div id="fn-tester-ui" class="flex justify-center gap-16 mb-8"></div>
+                <div id="fn-status" class="inline-block px-8 py-4 rounded-2xl text-xl font-bold transition-all border">
+                    Start mapping...
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Expanded Gallery Section -->
+        <section id="section-gallery" class="content-section hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="lg:col-span-1 space-y-2 max-h-[500px] overflow-y-auto pr-2">
+                    <button onclick="plotFn('identity')" class="gallery-btn w-full text-left p-3 rounded-lg border bg-white hover:bg-indigo-50">Identity</button>
+                    <button onclick="plotFn('constant')" class="gallery-btn w-full text-left p-3 rounded-lg border bg-white hover:bg-indigo-50">Constant</button>
+                    <button onclick="plotFn('modulus')" class="gallery-btn w-full text-left p-3 rounded-lg border bg-white hover:bg-indigo-50">Modulus</button>
+                    <button onclick="plotFn('signum')" class="gallery-btn w-full text-left p-3 rounded-lg border bg-white hover:bg-indigo-50">Signum</button>
+                    <button onclick="plotFn('gif')" class="gallery-btn w-full text-left p-3 rounded-lg border bg-white hover:bg-indigo-50">Greatest Integer</button>
+                    <button onclick="plotFn('square')" class="gallery-btn w-full text-left p-3 rounded-lg border bg-white hover:bg-indigo-50">Square ($x^2$)</button>
+                    <button onclick="plotFn('cube')" class="gallery-btn w-full text-left p-3 rounded-lg border bg-white hover:bg-indigo-50">Cube ($x^3$)</button>
+                    <button onclick="plotFn('rational')" class="gallery-btn w-full text-left p-3 rounded-lg border bg-white hover:bg-indigo-50">Rational ($1/x$)</button>
+                </div>
+                <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+                    <h4 id="graphTitle" class="text-xl font-bold text-indigo-900 mb-1">Function Plot</h4>
+                    <p id="graphDesc" class="text-gray-600 mb-4 text-sm"></p>
+                    <div class="h-[400px]"><canvas id="graphCanvas"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Algebra of Functions Section -->
+        <section id="section-algebra" class="content-section hidden space-y-6">
+            <div class="bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+                <h3 class="text-2xl font-bold text-indigo-800 mb-6">Algebra of Real Functions</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <p class="text-sm text-gray-500 uppercase font-bold tracking-wider">Input Value</p>
+                        <div class="flex items-center gap-4">
+                            <label class="text-lg">For $x = $</label>
+                            <input type="number" id="alg-x" value="2" class="w-24 p-2 border rounded-xl" oninput="calculateAlgebra()">
+                        </div>
+                        <div class="p-4 bg-indigo-50 rounded-xl space-y-2">
+                            <p>$f(x) = x^2$</p>
+                            <p>$g(x) = 2x + 1$</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <p class="text-sm text-gray-500 uppercase font-bold tracking-wider">Calculated Results</p>
+                        <div class="space-y-3" id="algebra-results">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div class="p-3 bg-gray-50 rounded-lg"><b>Addition:</b> $(f+g)(x) = f(x) + g(x)$</div>
+                    <div class="p-3 bg-gray-50 rounded-lg"><b>Subtraction:</b> $(f-g)(x) = f(x) - g(x)$</div>
+                    <div class="p-3 bg-gray-50 rounded-lg"><b>Multiplication:</b> $(fg)(x) = f(x)g(x)$</div>
+                    <div class="p-3 bg-gray-50 rounded-lg"><b>Quotient:</b> $(f/g)(x) = f(x)/g(x), g(x) \neq 0$</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let currentTab = 'cartesian';
+        let chart = null;
+        let relState = { A: [1,2,3,4], B: [5,6,7,8], pairs: [] };
+        let fnState = { A: [1,2,3,4], B: ['P','Q','R','S'], mapping: {} };
+
+        function switchTab(id) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('tab-btn-active');
+                b.classList.add('tab-btn-inactive');
+            });
+            document.getElementById(`section-${id}`).classList.remove('hidden');
+            document.getElementById(`tab-${id}`).classList.add('tab-btn-active');
+            
+            if(id === 'relations') initRelations();
+            if(id === 'functions') initFunctions();
+            if(id === 'gallery' && !chart) plotFn('identity');
+            if(id === 'algebra') calculateAlgebra();
+        }
+
+        // --- Cartesian ---
+        function updateCartesian() {
+            const a = document.getElementById('setA').value.split(',').map(s => s.trim()).filter(s => s);
+            const b = document.getElementById('setB').value.split(',').map(s => s.trim()).filter(s => s);
+            const res = document.getElementById('cartesianResult');
+            res.innerHTML = '';
+            a.forEach(vA => b.forEach(vB => {
+                const s = document.createElement('span');
+                s.className = "px-2 py-1 bg-white border rounded shadow-sm text-indigo-600";
+                s.textContent = `(${vA},${vB})`;
+                res.appendChild(s);
+            }));
+            document.getElementById('productCount').innerText = `n(A×B) = ${a.length * b.length}`;
+        }
+
+        // --- Relations ---
+        function initRelations() {
+            const cA = document.getElementById('rel-setA');
+            const cB = document.getElementById('rel-setB');
+            cA.innerHTML = ''; cB.innerHTML = '';
+            relState.A.forEach(v => {
+                const b = document.createElement('button');
+                b.className = "w-10 h-10 rounded-full border-2 border-indigo-400 bg-white font-bold";
+                b.textContent = v;
+                b.onclick = (e) => { pendingA = {val:v, el:e.target}; drawLines(); };
+                cA.appendChild(b);
+            });
+            relState.B.forEach(v => {
+                const b = document.createElement('button');
+                b.className = "w-10 h-10 rounded-full border-2 border-emerald-400 bg-white font-bold";
+                b.textContent = v;
+                b.onclick = () => { if(pendingA) { relState.pairs.push({a:pendingA.val, b:v}); pendingA=null; drawLines(); updateRelSummary(); } };
+                cB.appendChild(b);
+            });
+            drawLines();
+        }
+
+        let pendingA = null;
+        function drawLines() {
+            const canvas = document.getElementById('relCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 300, 400);
+            const rect = canvas.getBoundingClientRect();
+            relState.pairs.forEach(p => {
+                const bA = Array.from(document.querySelectorAll('#rel-setA button')).find(x => x.textContent == p.a);
+                const bB = Array.from(document.querySelectorAll('#rel-setB button')).find(x => x.textContent == p.b);
+                if(bA && bB) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, bA.getBoundingClientRect().top - rect.top + 20);
+                    ctx.lineTo(300, bB.getBoundingClientRect().top - rect.top + 20);
+                    ctx.strokeStyle = '#6366f1'; ctx.stroke();
+                }
+            });
+        }
+
+        function updateRelSummary() {
+            const d = [...new Set(relState.pairs.map(p => p.a))].sort();
+            const r = [...new Set(relState.pairs.map(p => p.b))].sort();
+            document.getElementById('domain-text').innerText = `{${d.join(',')}}`;
+            document.getElementById('range-text').innerText = `{${r.join(',')}}`;
+            document.getElementById('codomain-text').innerText = `{${relState.B.join(',')}}`;
+        }
+
+        function resetRelations() { relState.pairs = []; drawLines(); updateRelSummary(); }
+
+        // --- Functions ---
+        function initFunctions() {
+            const ui = document.getElementById('fn-tester-ui'); ui.innerHTML = '';
+            const cA = document.createElement('div'); cA.className = "flex flex-col gap-3";
+            fnState.A.forEach(v => {
+                const b = document.createElement('button');
+                b.className = "w-12 h-12 border-2 rounded-lg font-bold hover:bg-indigo-50";
+                b.id = `fna-${v}`; b.textContent = v;
+                b.onclick = () => { selA = v; document.querySelectorAll('[id^=fna-]').forEach(el=>el.style.borderColor='#6366f1'); b.style.borderColor='#4338ca'; };
+                cA.appendChild(b);
+            });
+            const cB = document.createElement('div'); cB.className = "flex flex-col gap-3";
+            fnState.B.forEach(v => {
+                const b = document.createElement('button');
+                b.className = "w-12 h-12 border-2 rounded-lg font-bold hover:bg-gray-50";
+                b.textContent = v;
+                b.onclick = () => { if(selA) { fnState.mapping[selA] = v; updateFnUI(); } };
+                cB.appendChild(b);
+            });
+            ui.appendChild(cA); ui.appendChild(cB);
+        }
+
+        let selA = null;
+        function updateFnUI() {
+            Object.entries(fnState.mapping).forEach(([k,v]) => {
+                const el = document.getElementById(`fna-${k}`);
+                el.classList.add('bg-indigo-600', 'text-white');
+                el.innerHTML = `${k}<br><span class='text-[8px]'>→ ${v}</span>`;
+            });
+            const keys = Object.keys(fnState.mapping);
+            const status = document.getElementById('fn-status');
+            if(keys.length === fnState.A.length) {
+                status.innerText = "✅ VALID FUNCTION";
+                status.className = "inline-block px-8 py-4 rounded-2xl text-xl font-bold bg-green-50 text-green-700 border-green-200";
+            } else {
+                status.innerText = "NOT A FUNCTION YET (Mapping incomplete)";
+                status.className = "inline-block px-8 py-4 rounded-2xl text-xl font-bold bg-amber-50 text-amber-600 border-amber-200";
+            }
+        }
+
+        // --- Expanded Gallery ---
+        function plotFn(type) {
+            const ctx = document.getElementById('graphCanvas').getContext('2d');
+            const tit = document.getElementById('graphTitle');
+            const des = document.getElementById('graphDesc');
+            if(chart) chart.destroy();
+            let labels = [], data = [], stepped = false, radius = 2;
+
+            switch(type) {
+                case 'identity': tit.innerText = "Identity Function: f(x) = x"; des.innerText = "Domain: R, Range: R";
+                    for(let x=-5; x<=5; x+=0.5) { labels.push(x); data.push(x); } break;
+                case 'constant': tit.innerText = "Constant Function: f(x) = 3"; des.innerText = "Domain: R, Range: {3}";
+                    for(let x=-5; x<=5; x+=0.5) { labels.push(x); data.push(3); } break;
+                case 'modulus': tit.innerText = "Modulus Function: f(x) = |x|"; des.innerText = "Domain: R, Range: [0, ∞)";
+                    for(let x=-5; x<=5; x+=0.5) { labels.push(x); data.push(Math.abs(x)); } break;
+                case 'signum': tit.innerText = "Signum Function"; des.innerText = "Domain: R, Range: {-1, 0, 1}";
+                    stepped = true; for(let x=-5; x<=5; x+=0.1) { labels.push(x.toFixed(1)); data.push(x>0?1:(x<0?-1:0)); } break;
+                case 'gif': tit.innerText = "Greatest Integer Function: f(x) = [x]"; des.innerText = "Domain: R, Range: Z";
+                    stepped = true; radius = 0; for(let x=-3; x<=3; x+=0.1) { labels.push(x.toFixed(1)); data.push(Math.floor(x)); } break;
+                case 'square': tit.innerText = "Polynomial: f(x) = x²"; des.innerText = "Domain: R, Range: [0, ∞)";
+                    for(let x=-5; x<=5; x+=0.2) { labels.push(x.toFixed(1)); data.push(x*x); } break;
+                case 'cube': tit.innerText = "Polynomial: f(x) = x³"; des.innerText = "Domain: R, Range: R";
+                    for(let x=-3; x<=3; x+=0.2) { labels.push(x.toFixed(1)); data.push(x*x*x); } break;
+                case 'rational': tit.innerText = "Rational Function: f(x) = 1/x"; des.innerText = "Domain: R-{0}, Range: R-{0}";
+                    for(let x=-4; x<=4; x+=0.2) { if(Math.abs(x) < 0.1) continue; labels.push(x.toFixed(1)); data.push(1/x); } break;
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: [{ label:'f(x)', data, borderColor:'#4f46e5', stepped, pointRadius:radius, tension:0.1 }] },
+                options: { responsive:true, maintainAspectRatio:false, scales: { y: { min:-5, max:5 } } }
+            });
+        }
+
+        // --- Algebra of Functions ---
+        function calculateAlgebra() {
+            const x = parseFloat(document.getElementById('alg-x').value);
+            const fx = x * x;
+            const gx = 2 * x + 1;
+            const res = document.getElementById('algebra-results');
+            res.innerHTML = `
+                <div class="flex justify-between border-b py-2"><span>$f(x) = x^2$</span><b>${fx}</b></div>
+                <div class="flex justify-between border-b py-2"><span>$g(x) = 2x+1$</span><b>${gx}</b></div>
+                <div class="flex justify-between py-2 text-indigo-700 font-bold"><span>$(f+g)(x)$</span><span>${fx + gx}</span></div>
+                <div class="flex justify-between py-2 text-red-600 font-bold"><span>$(f-g)(x)$</span><span>${fx - gx}</span></div>
+                <div class="flex justify-between py-2 text-emerald-700 font-bold"><span>$(fg)(x)$</span><span>${fx * gx}</span></div>
+                <div class="flex justify-between py-2 text-purple-700 font-bold"><span>$(f/g)(x)$</span><span>${gx !== 0 ? (fx / gx).toFixed(2) : 'Undefined'}</span></div>
+            `;
+        }
+
+        window.onload = () => { updateCartesian(); updateRelSummary(); };
+    </script>
+</body>
+</html>
